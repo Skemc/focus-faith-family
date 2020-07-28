@@ -1,0 +1,7 @@
+node_modules/
+<<<<<<< HEAD
+package-lock.json
+.DS_STORE
+=======
+package-lock.json
+>>>>>>>  work on TV Show page
