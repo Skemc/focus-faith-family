@@ -4095,7 +4095,11 @@ input[type="button"].btn-block {
 
 .navbar-brand {
   display: inline-block;
+<<<<<<< HEAD
   padding-top: 0.3128rem;
+=======
+  padding-top: 0.3125rem;
+>>>>>>>  work on TV Show page
   padding-bottom: 0.3125rem;
   margin-right: 38px;
   font-size: 1.25rem;
@@ -10191,12 +10195,17 @@ header .navbar .navbar-brand {
 }
 
 header .navbar .navbar-brand img {
+<<<<<<< HEAD
   margin-top: 10px;
   width: 102px;
 }
   .logo {
     margin: 10px 0;
   }
+=======
+  width: 192px;
+}
+>>>>>>>  work on TV Show page
 
 @media (max-width: 999px) {
   header .navbar .navbar-brand img {
