@@ -3,6 +3,7 @@ var cloudinary = require('cloudinary').v2;
 const {config} = require('dotenv');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+
 config();
 
 const pool = new Pool({connectionString: process.env.DATABASE_URL})
@@ -11,15 +12,6 @@ pool.on('connect', () => {
 }); 
 
 
-const getArticles = (req, res) => {
-  pool.query('SELECT * FROM news', (err, results) => {
-    if (err) {
-      throw err;
-    }
-    // console.log('found', res);
-    res.status(200).json(results.rows);
-  })
-}
 const createArticle = async (req, res) => {
   const {title, subtitle, body, author, category, image} = req.body;
   console.log('here', req.body);
@@ -35,9 +27,15 @@ const createUser = async (req, res) => {
   const {firstName, lastName, email, password, profileImage, role} = req.body;
   console.log('here', req.body);
   try {
+    if(!password) {
+      let autoPassword = Math.random().toString(36).substring(7);
+      const hashAutoPassword = bcrypt.hashSync(autoPassword, 10);
+      const results = await pool.query(`INSERT INTO users(firstName, lastName, email, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [firstName, lastName, email, hashAutoPassword, profileImage, role]);
+      return res.status(201).json(results.rows);
+    }
     const hashPassword = bcrypt.hashSync(password, 10);
     const results = await pool.query(`INSERT INTO users(firstName, lastName, email, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [firstName, lastName, email, hashPassword, profileImage, role]);
-  
+    console.log('yoooo', results.rows);
     return res.status(201).json(results.rows);
   } catch (error) {
     return res.status(500).json({message: error.message});
@@ -83,10 +81,62 @@ const changeRole = async (req, res) => {
   return res.status(200).json({ status: 200, data: updateRole.rows[0] });
 }
 
+const editArticle = async (req, res) => {
+  //check if the user exists 
+  const {user_id} = req.user.payload;
+  const {articleId} = req.params;
+  const {title, subtitle, category, body, status} = req.body;
+  try {
+    const { rows } = await pool.query('SELECT * FROM users WHERE user_id=$1', [user_id]);
+    console.log('savage', rows[0].role !== 'admin');
+    if (rows.length === 0) return res.status(404).json({ status: 404, message: 'User not found' });
+    
+    // check if the user is an admin or editor
+    if (rows[0].role !== 'admin' && rows[0].role !== 'editor') return res.status(403).json({ status: 403, message: 'Forbidden action' });
+   
+    // check if the article exists
+    const isArticle = await pool.query('SELECT * FROM news WHERE news_id=$1', [articleId]);
+    if (isArticle.rows.length === 0) res.status(404).json({ status: 404, message: 'Article not found' });
+
+    // edit the article
+    // change the status of the article to posted
+    const updatedArticle = await pool.query('UPDATE news SET title=$1, subtitle=$2, body=$3, category=$4, status=$5 RETURNING *', [title, subtitle, body, category, status]);
+    console.log('savage', updatedArticle.rows[0]);
+
+    if (updatedArticle.rows[0].news_id === articleId && updatedArticle.rows[0].status === 'posted') return res.status(400).json({ status: 400, message: 'The article was not edited successfully' });
+    
+    return res.status(200).json({ status: 200, message: 'Article edited successfully', data: updatedArticle.rows[0] });
+  } catch (error) {
+    return res.status(500).json({status: 500, message: error.message})
+  }  
+};
+
+const getAllArticles = async (req, res) => {
+  //get all articles 
+  try {    
+    const articles = await pool.query('SELECT * FROM news');
+    return res.status(200).json({status: 200, data: articles.rows})
+  } catch (error) {
+    return res.status(500).json({ status: 500,message: error.message })
+  }
+}
+
+const getAllUsers = async (req, res) => {
+  //get all users
+  try {    
+    const users = await pool.query('SELECT * FROM users');
+    return res.status(200).json({status: 200, data: users.rows})
+  } catch (error) {
+    return res.status(500).json({ status: 500,message: error.message })
+  }
+}
+
 module.exports = {
-  getArticles,
   createArticle,
   createUser,
   signinUser,
-  changeRole
+  changeRole,
+  editArticle,
+  getAllArticles,
+  getAllUsers
 }

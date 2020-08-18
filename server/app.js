@@ -16,11 +16,13 @@ app.use(
 app.get('/', (req, res) => {
     res.json({ info: 'Welcome to focus faith family'})
   });
-  app.get('/api/news', db.getArticles);
-  app.post('/api/new-article', db.createArticle);
-  app.post('/api/new-user', db.createUser);
-  app.post('/api/signin', db.signinUser);
-  app.patch('/api/user/:userId', verifyToken, db.changeRole);
-  app.listen(port, () => {
-    console.log(`App running on port ${port}.`)
-  })
+app.get('/api/users', db.getAllUsers);
+app.get('/api/news', db.getAllArticles);
+app.post('/api/new-article', db.createArticle);
+app.post('/api/new-user', db.createUser);
+app.post('/api/signin', db.signinUser);
+app.patch('/api/user/:userId', verifyToken, db.changeRole);
+app.patch('/api/edit-article/:articleId', verifyToken, db.editArticle);
+app.listen(port, () => {
+  console.log(`App running on port ${port}.`)
+});
