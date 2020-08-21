@@ -24,17 +24,13 @@ const createArticle = async (req, res) => {
   
 }
 const createUser = async (req, res) => {
-  const {firstName, lastName, email, password, profileImage, role} = req.body;
-  console.log('here', req.body);
+  const {firstName, lastName, email, phone, password, profileImage, role} = req.body;
+  console.log('here', req.bo);
   try {
-    if(!password) {
-      let autoPassword = Math.random().toString(36).substring(7);
-      const hashAutoPassword = bcrypt.hashSync(autoPassword, 10);
-      const results = await pool.query(`INSERT INTO users(firstName, lastName, email, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [firstName, lastName, email, hashAutoPassword, profileImage, role]);
-      return res.status(201).json(results.rows);
-    }
+    const isUser = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
+    if(isUser.rowCount > 0) return res.status(409).json({status: 409, message: 'User already exists'})
     const hashPassword = bcrypt.hashSync(password, 10);
-    const results = await pool.query(`INSERT INTO users(firstName, lastName, email, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [firstName, lastName, email, hashPassword, profileImage, role]);
+    const results = await pool.query(`INSERT INTO users(firstName, lastName, email, phone, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6, $7) RETURNING *`, [firstName, lastName, email, phone, hashPassword, profileImage, role]);
     console.log('yoooo', results.rows);
     return res.status(201).json(results.rows);
   } catch (error) {
@@ -88,22 +84,22 @@ const editArticle = async (req, res) => {
   const {title, subtitle, category, body, status} = req.body;
   try {
     const { rows } = await pool.query('SELECT * FROM users WHERE user_id=$1', [user_id]);
-    console.log('savage', rows[0].role !== 'admin');
-    if (rows.length === 0) return res.status(404).json({ status: 404, message: 'User not found' });
+    console.log('savage', user_id);
+    if (rows.length < 0) return res.status(404).json({ status: 404, message: 'User not found' });
     
     // check if the user is an admin or editor
     if (rows[0].role !== 'admin' && rows[0].role !== 'editor') return res.status(403).json({ status: 403, message: 'Forbidden action' });
    
     // check if the article exists
     const isArticle = await pool.query('SELECT * FROM news WHERE news_id=$1', [articleId]);
-    if (isArticle.rows.length === 0) res.status(404).json({ status: 404, message: 'Article not found' });
+    if (isArticle.rowCount < 0) res.status(404).json({ status: 404, message: 'Article not found' });
 
     // edit the article
     // change the status of the article to posted
-    const updatedArticle = await pool.query('UPDATE news SET title=$1, subtitle=$2, body=$3, category=$4, status=$5 RETURNING *', [title, subtitle, body, category, status]);
+    const updatedArticle = await pool.query(`UPDATE news SET title=$1, subtitle=$2, body=$3, category=$4, status='edited' WHERE news_id=$5 RETURNING *`, [title, subtitle, body, category, articleId]);
     console.log('savage', updatedArticle.rows[0]);
 
-    if (updatedArticle.rows[0].news_id === articleId && updatedArticle.rows[0].status === 'posted') return res.status(400).json({ status: 400, message: 'The article was not edited successfully' });
+    // if (updatedArticle.rows[0].news_id === articleId && updatedArticle.rows[0].status === 'posted') return res.status(400).json({ status: 400, message: 'The article was not edited successfully' });
     
     return res.status(200).json({ status: 200, message: 'Article edited successfully', data: updatedArticle.rows[0] });
   } catch (error) {
@@ -130,6 +126,21 @@ const getAllUsers = async (req, res) => {
     return res.status(500).json({ status: 500,message: error.message })
   }
 }
+const getArticle = async (req, res) => {
+  // get from params
+  const {newsId} = req.params;
+  console.log('ari');
+  try {
+    const isArticle = await pool.query('SELECT * FROM news WHERE news_id=$1', [newsId]);
+    // check if the article exists
+    console.log('ari', isArticle.rowCount <= 0);
+    if (isArticle.rowCount <= 0) return res.status(404).json({ status: 404, message: 'Article not found' });
+    // return article
+    return res.status(200).json({ status: 200, data: isArticle.rows[0] });
+  } catch (error) {
+    return res.status(500).json({status: 500, data: error.message});
+  }
+}
 
 module.exports = {
   createArticle,
@@ -138,5 +149,6 @@ module.exports = {
   changeRole,
   editArticle,
   getAllArticles,
-  getAllUsers
+  getAllUsers, 
+  getArticle
 }

@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 app.get('/api/users', db.getAllUsers);
 app.get('/api/news', db.getAllArticles);
 app.post('/api/new-article', db.createArticle);
+app.get('/api/news/:newsId', db.getArticle);
 app.post('/api/new-user', db.createUser);
 app.post('/api/signin', db.signinUser);
 app.patch('/api/user/:userId', verifyToken, db.changeRole);
