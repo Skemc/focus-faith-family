@@ -13,10 +13,10 @@ pool.on('connect', () => {
 
 
 const createArticle = async (req, res) => {
-  const {title, subtitle, body, author, category, image} = req.body;
+  const {title, subtitle, body, author, category, image, bodyhtml} = req.body;
   console.log('here', req.body);
   try {
-  const results = await pool.query(`INSERT INTO news(title,subtitle,body,author,category,image) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`, [title, subtitle, body, author, category, image]);
+  const results = await pool.query(`INSERT INTO news(title,subtitle,body,author,category,image, bodyhtml) VALUES ($1,$2,$3,$4,$5,$6, $7) RETURNING *`, [title, subtitle, body, author, category, image, bodyhtml]);
   return res.status(201).json(results.rows);
   } catch (error) {
     return res.status(500).json({message: error.message});
