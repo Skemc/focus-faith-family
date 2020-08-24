@@ -142,6 +142,26 @@ const getArticle = async (req, res) => {
   }
 }
 
+const createCategory = async (req, res) => {
+  // get from body
+  const {categoryName} = req.body;
+  // check if the category exists already
+  const isCategory = await pool.query('SELECT * FROM categories WHERE category_name=$1', [categoryName]);
+  if(isCategory.rowCount < 0) return res.status(409).json({status: 409, message: 'Category already created'});
+  // create category
+  const newCategory = await pool.query('INSERT INTO categories(category_name) VALUES($1)', [categoryName])
+  return res.status(201).json({status: 201, data: newCategory.rows[0]})
+}
+
+const getCategories = async (req, res) => {
+  try {
+    const isArticle = await pool.query('SELECT news.category, COUNT(*) FROM news INNER JOIN categories ON news.category=categories.category_name');
+    return res.status(200).json({status: 200, data: isArticle.rows})
+  } catch (error) {
+    return res.status(500).json({status: 500, message: error.message});
+  }
+}
+
 module.exports = {
   createArticle,
   createUser,
@@ -150,5 +170,7 @@ module.exports = {
   editArticle,
   getAllArticles,
   getAllUsers, 
-  getArticle
+  getArticle,
+  createCategory,
+  getCategories
 }
