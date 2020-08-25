@@ -83,10 +83,16 @@ const changeRole = async (req, res) => {
   return res.status(200).json({ status: 200, data: updateRole.rows[0] });
 }
 
+const getNews = async () => {
+  const { rows } = await pool.query('SELECT * FROM news');
+  return rows;
+}
+
 module.exports = {
   getArticles,
   createArticle,
   createUser,
   signinUser,
-  changeRole
+  changeRole,
+  getNews
 }
