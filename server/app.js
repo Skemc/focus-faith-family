@@ -22,11 +22,16 @@ app.use(express.static('public'))
 routes(app);
 
 // APIs
-  app.get('/api/news', db.getArticles);
-  app.post('/api/new-article', db.createArticle);
-  app.post('/api/new-user', db.createUser);
-  app.post('/api/signin', db.signinUser);
-  app.patch('/api/user/:userId', verifyToken, db.changeRole);
-  app.listen(port, () => {
-    console.log(`App running on port ${port}.`)
-  })
+app.get('/api/users', db.getAllUsers);
+app.get('/api/news', db.getAllArticles);
+app.get('/api/categories', db.getCategories);
+app.post('/api/new-article', db.createArticle);
+app.post('/api/new-category', db.createCategory);
+app.post('/api/new-user', db.createUser);
+app.get('/api/news/:newsId', db.getArticle);
+app.post('/api/signin', db.signinUser);
+app.patch('/api/user/:userId', verifyToken, db.changeRole);
+app.patch('/api/edit-article/:articleId', verifyToken, db.editArticle);
+app.listen(port, () => {
+  console.log(`App running on port ${port}.`)
+});
