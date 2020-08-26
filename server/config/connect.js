@@ -16,7 +16,6 @@ const getArticles = (req, res) => {
     if (err) {
       throw err;
     }
-    // console.log('found', res);
     res.status(200).json(results.rows);
   })
 }
