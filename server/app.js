@@ -1,9 +1,10 @@
 const express =  require('express');
+const app = express();
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const db = require('./config/connect');
 const {verifyToken} = require('./middleware/verifyToken');
-const app = express()
+const routes = require('./routes');
 const port = 3000
 
 app.use(cors());
@@ -13,9 +14,14 @@ app.use(
     extended: true,
   })
 );
-app.get('/', (req, res) => {
-    res.json({ info: 'Welcome to focus faith family'})
-  });
+// set the view engine to ejs
+app.set('view engine', 'ejs');
+app.use(express.static('public'))
+
+// use res.render to load up an ejs view file
+routes(app);
+
+// APIs
 app.get('/api/users', db.getAllUsers);
 app.get('/api/news', db.getAllArticles);
 app.get('/api/categories', db.getCategories);
