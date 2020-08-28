@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./server/app.js",
     "dev": "node_modules/.bin/nodemon ./server/app.js",
-    "db":"node server/config/createTables",
+    "db": "node server/config/createTables",
+    "drop-db": "node server/config/dropTables",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

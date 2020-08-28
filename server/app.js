@@ -25,6 +25,7 @@ routes(app);
 app.get('/api/users', db.getAllUsers);
 app.get('/api/news', db.getAllArticles);
 app.get('/api/categories', db.getCategories);
+app.get('/api/group-categories', db.getCategoriesByGroup);
 app.post('/api/new-article', db.createArticle);
 app.post('/api/new-category', db.createCategory);
 app.post('/api/new-user', db.createUser);

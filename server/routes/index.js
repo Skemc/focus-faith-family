@@ -15,6 +15,11 @@ module.exports = function(app) {
         
         // res.render('pages/index');
       });
+      app.get('/news', async (req, res) => {
+        const singleNews = await db.getSingleNews(req);
+        console.log('ssss', singleNews);
+        res.render('pages/selected-post', {data: singleNews, error: null});
+      })
       app.get('/tv', (req, res) => {
         res.render('pages/tvShow');
       });

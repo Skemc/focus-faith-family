@@ -16,7 +16,7 @@ const createArticle = async (req, res) => {
   const {title, subtitle, body, author, category, image, bodyhtml} = req.body;
   console.log('here', req.body);
   try {
-  const results = await pool.query(`INSERT INTO news(title,subtitle,body,author,category,image, bodyhtml) VALUES ($1,$2,$3,$4,$5,$6, $7) RETURNING *`, [title, subtitle, body, author, category, image, bodyhtml]);
+  const results = await pool.query(`INSERT INTO news(title,subtitle,body,author,category,image,bodyhtml) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [title, subtitle, body, author, category, image, bodyhtml]);
   return res.status(201).json(results.rows);
   } catch (error) {
     return res.status(500).json({message: error.message});
@@ -29,8 +29,8 @@ const createUser = async (req, res) => {
   try {
     const isUser = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
     if(isUser.rowCount > 0) return res.status(409).json({status: 409, message: 'User already exists'})
-    const hashPassword = bcrypt.hashSync(password, 10);
-    const results = await pool.query(`INSERT INTO users(firstName, lastName, email, phone, password, profileImage, role) VALUES ($1,$2,$3,$4,$5,$6, $7) RETURNING *`, [firstName, lastName, email, phone, hashPassword, profileImage, role]);
+    const hashPassword = bcrypt.hashSync(password, 11);
+    const results = await pool.query(`INSERT INTO users(firstName, lastName, email, phone, password, profileImage,role) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`, [firstName, lastName, email, phone, hashPassword, profileImage, role]);
     console.log('yoooo', results.rows);
     return res.status(201).json(results.rows);
   } catch (error) {
@@ -46,11 +46,11 @@ const signinUser = async (req, res) => {
     const emailFound = await pool.query('SELECT * FROM users WHERE email=$1', [email]);
     if (!emailFound) return res.status(404).json({ message: 'This account is not created yet' });
     
+    console.log('password', emailFound.rows[0].password);
     const isPassword = bcrypt.compareSync(password, emailFound.rows[0].password);
     if (!isPassword) return res.status(401).json({ message: 'Incorrect email or password' });
     
     const token = jwt.sign({payload: emailFound.rows[0]}, process.env.KEY);
-    console.log('done------', token);
     const payload = jwt.verify(token, process.env.KEY);
     req.user = payload;
     return res.status(200).json({status: 200, data: token});
@@ -80,6 +80,11 @@ const changeRole = async (req, res) => {
 const getNews = async () => {
   const { rows } = await pool.query('SELECT * FROM news');
   return rows;
+}
+const getSingleNews = async (req) => {
+  const {newsId} = req.query
+  const { rows } = await pool.query('SELECT * FROM news WHERE news_id=$1', [newsId]);
+  return rows[0];
 }
 
 const editArticle = async (req, res) => {
@@ -160,8 +165,16 @@ const createCategory = async (req, res) => {
 
 const getCategories = async (req, res) => {
   try {
-    const isArticle = await pool.query('SELECT news.category, COUNT(*) FROM news INNER JOIN categories ON news.category=categories.category_name');
+    const isArticle = await pool.query('SELECT * FROM categories');
     return res.status(200).json({status: 200, data: isArticle.rows})
+  } catch (error) {
+    return res.status(500).json({status: 500, message: error.message});
+  }
+}
+const getCategoriesByGroup = async (req, res) => {
+  try {
+    const articles = await pool.query('SELECT COUNT(news.category) FROM news INNER JOIN categories ON news.category=categories.category_name GROUP BY news.category');
+    return res.status(200).json({status: 200, data: articles.rows})
   } catch (error) {
     return res.status(500).json({status: 500, message: error.message});
   }
@@ -173,10 +186,12 @@ module.exports = {
   signinUser,
   changeRole,
   getNews,
+  getSingleNews,
   editArticle,
   getAllArticles,
   getAllUsers, 
   getArticle,
   createCategory,
-  getCategories
+  getCategories,
+  getCategoriesByGroup
 }

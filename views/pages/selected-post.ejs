@@ -17,7 +17,7 @@
     <!-- endinject -->
 </head>
 
-<body>
+<body onload="getArticle()">
     <div class="container-scroller">
         <div class="main-panel">
             <!-- partial:../partials/_navbar.html -->
@@ -149,13 +149,10 @@
                                     </div>
                                 </div> -->
                                 <div class="row">
-                                    <div class="col-lg-9">
-                                        <div class="row">
+                                    <div class="col-lg-12" id="single-news">
+                                        <!-- <div class="row">
                                             <div class="col-sm-11 grid-margin">
-                                                <h1 class="font-weight-600 mb-4">
-                                                    Coronavirus Outbreak in Rwanda LIVE Updates: Schools, Concerts and so many
-                                                    suspended
-                                                </h1>
+                                                <h1 class="font-weight-600 mb-4"></h1>
                                                 <div>
                                                     <img src="../assets/images/dashboard/images1.jpg" alt="banner"
                                                         class="img-fluid" />
@@ -194,14 +191,13 @@
                                                     nam at lectus urna duis. Tristique et egestas quis ipsum suspendisse
                                                     ultrices gravida dictum fusce.
                                                 </p>
-                                                <small class="text-muted">Last posted 3 mins ago</small><br>
                                                 <small class="text-muted">Article by Jordan Nakamura</small><br>
                                             </div>
                                             
-                                        </div>
+                                        </div> -->
                                     </div>
-                                    <div class="col-lg-3">
-                                        <h2 class="mb-4 text-primary font-weight-600">
+                                    <!-- <div class="col-lg-3"> -->
+                                        <!-- <h2 class="mb-4 text-primary font-weight-600">
                                             Latest news
                                         </h2>
                                         <div id="carouselExampleSlidesOnly" class="carousel slide" data-ride="carousel">
@@ -438,7 +434,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <!-- <div class="trending">
                         <h2 class="mb-4 text-primary font-weight-600">
                           Trending
@@ -489,7 +485,7 @@
                           </p>
                         </div>
                       </div> -->
-                                    </div>
+                                    <!-- </div> -->
                                 </div>
                             </div>
                         </div>
@@ -644,6 +640,64 @@
     <script src="../assets/js/demo.js"></script>
     <script src="../assets/js/jquery.easeScroll.js"></script>
     <!-- End custom js for this page-->
+    <script>
+        const getArticle = async () => {
+            const newsId = new URLSearchParams(window.location.search);
+            const response = await fetch(`http://localhost:3000/api/news/${newsId.get('newsId')}`);
+            const singleArticle = await response.json(); 
+            console.log('paramas', singleArticle.data.title);
+            const articleCard = document.querySelector('#single-news');
+            // row
+            const articleRow = document.createElement('div');
+            articleRow.classList.add('row');
+
+            // title and image div
+            const articleHeader = document.createElement('div');
+            articleHeader.classList.add('col-sm-11', 'grid-margin');
+
+            // title
+            const articleTitle = document.createElement('h1')
+            articleTitle.classList.add('font-weight-600', 'mb-4');
+            articleTitle.innerHTML = singleArticle.data.title;
+
+            // image
+            const articleImgGroup = document.createElement('div')
+            const articleImg = document.createElement('img')
+            articleImg.classList.add('img-fluid');
+            articleImg.src = singleArticle.data.image;
+
+            articleImgGroup.appendChild(articleImg);
+            articleHeader.appendChild(articleTitle)
+            articleHeader.appendChild(articleImgGroup);
+            articleRow.appendChild(articleHeader);
+            
+            //article sub and body 
+            const articleBodyGroup = document.createElement('div')
+            articleBodyGroup.classList.add('col-sm-10');
+            
+            //subtitle
+            const articleSubtitle = document.createElement('h2');
+            articleSubtitle.classList.add('font-weight-600', 'mb-2');
+            articleSubtitle.innerHTML = singleArticle.data.subtitle;
+            articleBodyGroup.appendChild(articleSubtitle);
+            
+            // body
+            const articleBody = document.createElement('div');
+            // articleBody.appendChild(singleArticle.bodyhtml);
+            articleBody.innerHTML = singleArticle.data.bodyhtml;
+            articleBodyGroup.appendChild(articleBody);
+            
+            // author
+            const articleAuthor = document.createElement('small')
+            articleAuthor.classList.add('text-muted');
+            articleAuthor.innerHTML = `Author: ${singleArticle.data.author}`;
+            articleBodyGroup.appendChild(articleAuthor);
+            
+            articleRow.appendChild(articleBodyGroup);
+            articleCard.appendChild(articleRow);
+
+            }
+    </script>
 </body>
 
 </html>

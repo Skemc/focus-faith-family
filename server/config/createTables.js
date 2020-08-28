@@ -14,9 +14,10 @@ const createTable = async () => {
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password VARCHAR(500) NOT NULL,
+    password TEXT NOT NULL,
     role TEXT NOT NULL,
-    profileImage TEXT NOT NULL
+    profileImage TEXT,
+    phone TEXT NOT NULL
   )`;
 
   const categoriesTable = `CREATE TABLE IF NOT EXISTS categories(
@@ -27,14 +28,15 @@ const createTable = async () => {
     title VARCHAR(1000) NOT NULL,
     subtitle VARCHAR(1000) NOT NULL,
     body VARCHAR(1000000) NOT NULL UNIQUE,
+    author VARCHAR(500) NOT NULL,
     category VARCHAR(100) REFERENCES categories(category_name) NOT NULL,
     image VARCHAR(2000) NOT NULL,
-    status VARCHAR(50) NOT NULL,
-    bodyHtml VARCHAR(10100000) NOT NULL
-  )`;
+    status VARCHAR(50) DEFAULT 'pending' NOT NULL,
+    bodyhtml VARCHAR(10100000) NOT NULL
+  )`
 
 
-  const dummy = `INSERT INTO users(firstname, lastname, email, password, role, profileImage) VALUES('jordan','kayinamura', 'jordankayinamura@gmail.com','$2y$10$UhsXeM5Mq9.2g0BXEzCow.yiVULfr6ftkcd/elyzBaA4N/G0LqnQW', 'admin', '')`
+  const dummy = `INSERT INTO users(firstname, lastname, email, password, role, profileImage, phone) VALUES('jordan','kayinamura', 'jordankayinamura@gmail.com','$2a$10$5w0G7fUEYp0yszP.E2G2f.y0YfEX79XFCqR2mH5SiEneQAcqsdcM2', 'admin', '', '0781268924')`
   await pool.query(usersTable);
   await pool.query(categoriesTable);
   await pool.query(newsTable);
