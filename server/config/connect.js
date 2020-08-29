@@ -50,6 +50,7 @@ const signinUser = async (req, res) => {
     const isPassword = bcrypt.compareSync(password, emailFound.rows[0].password);
     if (!isPassword) return res.status(401).json({ message: 'Incorrect email or password' });
     
+    // const {password, ...rest} = emailFound.rows[0];
     const token = jwt.sign({payload: emailFound.rows[0]}, process.env.KEY);
     const payload = jwt.verify(token, process.env.KEY);
     req.user = payload;
@@ -180,6 +181,28 @@ const getCategoriesByGroup = async (req, res) => {
   }
 }
 
+const userSettings = async(req, res) => {
+  // get from req.body
+  try {
+    const { firstName, lastName, phone, oldPassword, newPassword, image } = req.body;
+    const { user_id } = req.user.payload;
+    // check if the user exists
+    const isUser = await pool.query('SELECT * FROM users WHERE user_id=$1', [user_id]);
+    if (isUser.rowCount <= 0) return res.status(404).json({ status: 404, message: 'User does not exist' });
+    // check if the old password match
+    const isOldPassword = bcrypt.compareSync(oldPassword, isUser.rows[0].password);
+    if (!isOldPassword) return res.status(401).json({ status: 401, message: 'Incorrect password' });
+    // update data
+    const hashPassword = bcrypt.hashSync(newPassword, 10);
+    const newProfile = await pool.query('UPDATE users SET firstname=$1,lastname=$2,phone=$3,password=$4,profileimage=$5 WHERE user_id=$6 RETURNING *', [firstName, lastName, phone, hashPassword, image, user_id]);
+    console.log('profff', newProfile.rows);
+    return res.status(200).json({ status: 200, data: newProfile.rows[0] });
+  } catch (error) {
+    return res.status(500).json({ status: 500, message: error.message });
+    
+  }
+}
+
 module.exports = {
   createArticle,
   createUser,
@@ -193,5 +216,6 @@ module.exports = {
   getArticle,
   createCategory,
   getCategories,
-  getCategoriesByGroup
+  getCategoriesByGroup,
+  userSettings
 }

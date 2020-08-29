@@ -31,8 +31,9 @@ app.post('/api/new-category', db.createCategory);
 app.post('/api/new-user', db.createUser);
 app.get('/api/news/:newsId', db.getArticle);
 app.post('/api/signin', db.signinUser);
-app.patch('/api/user/:userId', verifyToken, db.changeRole);
+app.patch('/api/user/user-role/:userId', verifyToken, db.changeRole);
 app.patch('/api/edit-article/:articleId', verifyToken, db.editArticle);
+app.patch('/api/user/settings', verifyToken, db.userSettings);
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
 });
